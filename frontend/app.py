@@ -12,7 +12,8 @@ import streamlit as st
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="Vision Dashboard", layout="wide")
-st.title("🎯 Dashboard Détection & Tracking d'Objets")
+st.markdown("<style>footer {visibility: hidden;}</style>", unsafe_allow_html=True)
+st.title("Dashboard Détection & Tracking d'Objets")
 
 page = st.sidebar.radio("Navigation", ["Nouvelle analyse", "Historique des sessions"])
 
@@ -22,10 +23,12 @@ page = st.sidebar.radio("Navigation", ["Nouvelle analyse", "Historique des sessi
 if page == "Nouvelle analyse":
     st.sidebar.header("Paramètres")
     task = st.sidebar.selectbox("Tâche", ["Détection (image)", "Segmentation (image)", "Tracking (vidéo)"])
-    model_name = st.sidebar.text_input(
-        "Modèle",
-        value="yolov8n.pt" if task != "Segmentation (image)" else "yolov8n-seg.pt",
+    model_options = (
+        ["yolov8n-seg.pt", "yolov8s-seg.pt", "yolov8m-seg.pt"]
+        if task == "Segmentation (image)"
+        else ["yolov8n.pt", "yolov8s.pt", "yolov8m.pt"]
     )
+    model_name = st.sidebar.selectbox("Modèle", model_options)
     conf = st.sidebar.slider("Seuil de confiance", 0.0, 1.0, 0.25, 0.05)
 
     if task == "Tracking (vidéo)":
@@ -35,7 +38,8 @@ if page == "Nouvelle analyse":
         uploaded_file = st.file_uploader("Uploader une image", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
-        st.image(uploaded_file, caption="Fichier source", width=350) if task != "Tracking (vidéo)" else None
+        if task != "Tracking (vidéo)":
+            st.image(uploaded_file, caption="Fichier source", width=350)
 
         if st.button("Lancer l'analyse"):
             with st.spinner("Traitement en cours..."):
